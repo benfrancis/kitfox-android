@@ -8,7 +8,7 @@ import org.mozilla.geckoview.GeckoView;
 
 public class MainActivity extends Activity {
 
-    private static final String HOME_PAGE = "https://duckduckgo.com";
+    private static final String HOME_PAGE = "http://kitfox.tola.me.uk";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
