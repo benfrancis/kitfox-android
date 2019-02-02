@@ -65,7 +65,8 @@
                 android:hint="How can I help?"
                 android:inputType="text"
                 android:maxLines="1"
-                android:padding="5dp" />
+                android:padding="5dp"
+                android:imeOptions="actionDone" />
         </LinearLayout>
 
         <ImageButton
