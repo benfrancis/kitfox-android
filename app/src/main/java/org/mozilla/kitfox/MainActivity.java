@@ -3,7 +3,7 @@ package org.mozilla.kitfox;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.text.Editable;
+import android.view.View;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -19,6 +19,8 @@ public class MainActivity extends Activity {
 
     private static final String HOME_PAGE = "http://kitfox.tola.me.uk";
     private static final String SEARCH_URL = "https://duckduckgo.com/?q=";
+    private GeckoSession session;
+    private EditText urlBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,16 +28,19 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         GeckoView view = findViewById(R.id.geckoview);
-        final GeckoSession session = new GeckoSession();
+        session = new GeckoSession();
         GeckoRuntime runtime = GeckoRuntime.create(this);
 
         session.open(runtime);
         view.setSession(session);
         session.loadUri(HOME_PAGE);
 
-        final EditText urlBar = findViewById(R.id.urlbar);
+        urlBar = findViewById(R.id.urlbar);
 
 
+        /**
+         * Search or navigate to URL on submit.
+         */
         urlBar.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView view, int actionId, KeyEvent event) {
@@ -63,5 +68,15 @@ public class MainActivity extends Activity {
                 return false;
             }
         });
+    }
+
+    /**
+     * Navigate to home page.
+     *
+     * @param View view
+     */
+    public void goHome(View view) {
+        session.loadUri(HOME_PAGE);
+        urlBar.setText("");
     }
 }
