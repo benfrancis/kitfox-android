@@ -9,6 +9,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.URLUtil;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.mozilla.geckoview.GeckoRuntime;
@@ -18,25 +19,30 @@ import org.mozilla.geckoview.GeckoView;
 public class MainActivity extends Activity {
 
     private static final String HOME_PAGE = "http://kitfox.tola.me.uk";
-    private static final String SEARCH_URL = "https://duckduckgo.com/?q=";
+    private GeckoView geckoview;
     private GeckoSession session;
     private EditText urlBar;
+    private ListView chatView;
+    private ChatArrayAdapter chatArrayAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        GeckoView view = findViewById(R.id.geckoview);
+        geckoview = findViewById(R.id.geckoview);
         session = new GeckoSession();
         GeckoRuntime runtime = GeckoRuntime.create(this);
 
         session.open(runtime);
-        view.setSession(session);
+        geckoview.setSession(session);
         session.loadUri(HOME_PAGE);
 
         urlBar = findViewById(R.id.urlbar);
 
+        chatView = findViewById(R.id.chat_view);
+        chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.incoming_message);
+        chatView.setAdapter(chatArrayAdapter);
 
         /**
          * Search or navigate to URL on submit.
@@ -50,13 +56,14 @@ public class MainActivity extends Activity {
                         return false;
                     }
 
-                    // Navigate to URL or search
+                    // Navigate to URL or submit message
                     if (URLUtil.isValidUrl(url) && url.contains(".")) {
                         session.loadUri(url);
                     } else if (URLUtil.isValidUrl("http://" + url) && url.contains(".")) {
                         session.loadUri("http://" + url);
                     } else {
-                        session.loadUri(SEARCH_URL + url);
+                        addChatMessage();
+                        showChatView();
                     }
 
                     // Blur URL bar and hide keyboard
@@ -76,7 +83,19 @@ public class MainActivity extends Activity {
      * @param View view
      */
     public void goHome(View view) {
+        chatView.setVisibility(View.GONE);
+        geckoview.setVisibility(View.VISIBLE);
         session.loadUri(HOME_PAGE);
+        urlBar.setText("");
+    }
+
+    private void showChatView() {
+        geckoview.setVisibility(View.GONE);
+        chatView.setVisibility(View.VISIBLE);
+    }
+
+    private void addChatMessage() {
+        chatArrayAdapter.add(new ChatMessage(false, urlBar.getText().toString()));
         urlBar.setText("");
     }
 }

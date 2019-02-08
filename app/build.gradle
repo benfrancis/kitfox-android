@@ -20,12 +20,12 @@ android {
     flavorDimensions "abi", "form_factor"
 
     productFlavors {
-        x86     { dimension "abi" }
-        x86_64  { dimension "abi" }
-        arm     { dimension "abi" }
+        x86 { dimension "abi" }
+        x86_64 { dimension "abi" }
+        arm { dimension "abi" }
         aarch64 { dimension "abi" }
         mobile { dimension "form_factor" }
-        smart_display { dimension "form_factor"}
+        smart_display { dimension "form_factor" }
     }
 
 }
@@ -45,13 +45,14 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support:support-v4:28.0.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    x86Implementation     "org.mozilla.geckoview:geckoview-${geckoviewChannel}-x86:${geckoviewVersion}"
-    x86_64Implementation  "org.mozilla.geckoview:geckoview-${geckoviewChannel}-x86_64:${geckoviewVersion}"
-    armImplementation     "org.mozilla.geckoview:geckoview-${geckoviewChannel}-armeabi-v7a:${geckoviewVersion}"
+    x86Implementation "org.mozilla.geckoview:geckoview-${geckoviewChannel}-x86:${geckoviewVersion}"
+    x86_64Implementation "org.mozilla.geckoview:geckoview-${geckoviewChannel}-x86_64:${geckoviewVersion}"
+    armImplementation "org.mozilla.geckoview:geckoview-${geckoviewChannel}-armeabi-v7a:${geckoviewVersion}"
     aarch64Implementation "org.mozilla.geckoview:geckoview-${geckoviewChannel}-arm64-v8a:${geckoviewVersion}"
 
     smart_displayCompileOnly 'com.google.android.things:androidthings:+'
