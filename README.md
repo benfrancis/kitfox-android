@@ -2,7 +2,7 @@
 Kitfox is a voice assistant for the web.
 
 
-<img src="http://tola.me.uk/files/kitfox_screenshot.png" width="320" />
+<img src="http://tola.me.uk/files/kitfox_screenshot.png#" width="320" />
 
 ## Installation
 
