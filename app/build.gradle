@@ -17,13 +17,15 @@ android {
         }
     }
 
-    flavorDimensions "abi"
+    flavorDimensions "abi", "form_factor"
 
     productFlavors {
         x86     { dimension "abi" }
         x86_64  { dimension "abi" }
         arm     { dimension "abi" }
         aarch64 { dimension "abi" }
+        mobile { dimension "form_factor" }
+        smart_display { dimension "form_factor"}
     }
 
 }
@@ -52,5 +54,5 @@ dependencies {
     armImplementation     "org.mozilla.geckoview:geckoview-${geckoviewChannel}-armeabi-v7a:${geckoviewVersion}"
     aarch64Implementation "org.mozilla.geckoview:geckoview-${geckoviewChannel}-arm64-v8a:${geckoviewVersion}"
 
-    compileOnly 'com.google.android.things:androidthings:+'
+    smart_displayCompileOnly 'com.google.android.things:androidthings:+'
 }
