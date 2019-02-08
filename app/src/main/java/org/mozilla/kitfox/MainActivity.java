@@ -19,23 +19,27 @@ public class MainActivity extends Activity {
 
     private static final String HOME_PAGE = "http://kitfox.tola.me.uk";
     private static final String SEARCH_URL = "https://duckduckgo.com/?q=";
+    private GeckoView geckoview;
     private GeckoSession session;
     private EditText urlBar;
+    private View chatView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        GeckoView view = findViewById(R.id.geckoview);
+        geckoview = findViewById(R.id.geckoview);
         session = new GeckoSession();
         GeckoRuntime runtime = GeckoRuntime.create(this);
 
         session.open(runtime);
-        view.setSession(session);
+        geckoview.setSession(session);
         session.loadUri(HOME_PAGE);
 
         urlBar = findViewById(R.id.urlbar);
+
+        chatView = findViewById(R.id.chat_view);
 
 
         /**
@@ -56,7 +60,8 @@ public class MainActivity extends Activity {
                     } else if (URLUtil.isValidUrl("http://" + url) && url.contains(".")) {
                         session.loadUri("http://" + url);
                     } else {
-                        session.loadUri(SEARCH_URL + url);
+                        showChatView();
+                        //session.loadUri(SEARCH_URL + url);
                     }
 
                     // Blur URL bar and hide keyboard
@@ -76,7 +81,14 @@ public class MainActivity extends Activity {
      * @param View view
      */
     public void goHome(View view) {
+        chatView.setVisibility(View.GONE);
+        geckoview.setVisibility(View.VISIBLE);
         session.loadUri(HOME_PAGE);
         urlBar.setText("");
+    }
+
+    public void showChatView() {
+        geckoview.setVisibility(View.GONE);
+        chatView.setVisibility(View.VISIBLE);
     }
 }

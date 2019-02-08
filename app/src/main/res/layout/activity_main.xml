@@ -15,7 +15,49 @@
         android:id="@+id/geckoview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        />
+
+    <LinearLayout
+        android:id="@+id/chat_view"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="#e9e9ea"
+        android:gravity="bottom"
+        android:visibility="gone"
+        >
+
+        <TextView
+            android:layout_width="350dp"
+            android:layout_height="55dp"
+            android:background="@drawable/outgoing_speech_bubble"
+            android:layout_gravity="center"
+            android:text="Play some Jazz music"
+            android:layout_marginBottom="10dp"
+            android:paddingLeft="25dp"
+            android:paddingRight="5dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:textSize="15sp"
+            />
+
+        <TextView
+            android:layout_width="350dp"
+            android:layout_height="55dp"
+            android:background="@drawable/incoming_speech_bubble"
+            android:layout_gravity="center"
+            android:text="OK, playing Cool Jazz Vibes on YouTube Music..."
+            android:layout_marginBottom="10dp"
+            android:paddingRight="25dp"
+            android:paddingLeft="5dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:textSize="15sp"
+            />
+
+    </LinearLayout>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/system_toolbar"
