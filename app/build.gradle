@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "org.mozilla.kitfox"
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -32,7 +32,7 @@ android {
 
 ext {
     geckoviewChannel = "nightly"
-    geckoviewVersion = "64.0.20180927100037"
+    geckoviewVersion = "67.0.20190222081112"
 }
 
 repositories {
