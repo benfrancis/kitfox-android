@@ -2,6 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         applicationId "org.mozilla.kitfox"
         minSdkVersion 26
@@ -32,7 +38,7 @@ android {
 
 ext {
     geckoviewChannel = "nightly"
-    geckoviewVersion = "67.0.20190222081112"
+    geckoviewVersion = "67.0.20190308093915"
 }
 
 repositories {

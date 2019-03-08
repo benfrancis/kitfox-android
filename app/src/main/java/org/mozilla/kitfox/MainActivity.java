@@ -25,6 +25,11 @@ import org.mozilla.geckoview.WebRequest;
 import org.mozilla.geckoview.GeckoWebExecutor;
 import org.mozilla.geckoview.WebResponse;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -105,7 +110,7 @@ public class MainActivity extends Activity {
     /**
      * Show web view and navigate to home page.
      *
-     * @param View view
+     * @param view
      */
     public void goHome(View view) {
         showWebView();
@@ -179,7 +184,7 @@ public class MainActivity extends Activity {
     /**
      * Handle a response from the Kitfox server.
      *
-     * @param WebResponse response Response received.
+     * @param response WebResponse received.
      */
     private void handleMessageResponse(WebResponse response) {
         // Detect error responses
@@ -189,7 +194,7 @@ public class MainActivity extends Activity {
         }
 
         // Parse response
-        JSONObject jsonResponse = this.byteBuffertoJsonObject(response.body);
+        JSONObject jsonResponse = this.inputStreamToJsonObject(response.body);
 
         String method = null;
         String url = null;
@@ -208,8 +213,15 @@ public class MainActivity extends Activity {
         } catch(JSONException exception) { }
 
         // If a textual response is provided, show it in chat
-        if (text.length() > 0) {
+        if (text != null && text.length() > 0) {
             this.showChatMessage(true, text);
+        } else {
+            Log.i("Kitfox","No text response provided by server.");
+        }
+
+        if (method == null || url == null) {
+            Log.i("Kitfox", "No method or URL provided by server.");
+            return;
         }
 
         // If a GET action with a URL is provided, navigate to it
@@ -228,7 +240,7 @@ public class MainActivity extends Activity {
     /**
      * Convert a JSONObject to a ByteBuffer.
      *
-     * @param JSONObject object A JSONObject to be converted
+     * @param object A JSONObject to be converted
      * @return ByteBuffer A ByteBuffer to be sent via fetch()
      */
     private ByteBuffer jsonObjectToByteBuffer(JSONObject object) {
@@ -240,20 +252,37 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * Convert a ByteBuffer to a JSONObject.
-     * @param ByteBuffer buffer Buffer to convert.
+     * Convert an InputStream to a JSONObject
+     *
+     * @param inputStream The InputStream to convert
      * @return JSONObject
      */
-    private JSONObject byteBuffertoJsonObject(ByteBuffer buffer) {
-        CharBuffer charBuffer = Charset.forName("UTF-8").decode(buffer);
-        String string = charBuffer.toString();
-        JSONObject object = new JSONObject();
+    private JSONObject inputStreamToJsonObject(InputStream inputStream) {
+        BufferedReader streamReader = null;
 
-        // Try to parse JSON
+        // Try to decode input stream
+        try {
+            streamReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+        } catch (UnsupportedEncodingException exception) {
+            Log.e("Kitfox", "Unsupported encoding from InputStream");
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        String inputString;
+        try {
+            while ((inputString = streamReader.readLine()) != null)
+                stringBuilder.append(inputString);
+        } catch (IOException exception) {
+            Log.e("Kitfox", "I/O exception while reading InputStream");
+        }
+
+
+        // Try to parse string as JSON
+        String string = stringBuilder.toString();
+        JSONObject object = new JSONObject();
         try {
             object = new JSONObject(string);
         } catch(JSONException exception) {
-          Log.e("Kitfox", "Invalid JSON");
+            Log.e("Kitfox", "Invalid JSON");
         }
 
         return object;
