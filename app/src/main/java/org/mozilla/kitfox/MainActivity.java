@@ -11,8 +11,13 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.URLUtil;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.mozilla.speechlibrary.ISpeechRecognitionListener;
+import com.mozilla.speechlibrary.MozillaSpeechService;
+import com.mozilla.speechlibrary.STTResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,9 +51,11 @@ public class MainActivity extends Activity {
     private GeckoView geckoview;
     private GeckoSession session;
     private GeckoRuntime runtime;
+    private MozillaSpeechService speechService;
     private EditText urlBar;
     private ListView chatView;
     private ChatArrayAdapter chatArrayAdapter;
+    private ImageButton speakButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +71,7 @@ public class MainActivity extends Activity {
         session.loadUri(HOME_PAGE);
 
         urlBar = findViewById(R.id.urlbar);
+        speakButton = findViewById(R.id.speak_button);
 
         chatView = findViewById(R.id.chat_view);
         chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.incoming_message);
@@ -103,6 +111,62 @@ public class MainActivity extends Activity {
                     return true;
                 }
                 return false;
+            }
+        });
+
+        ISpeechRecognitionListener speechListener = new ISpeechRecognitionListener() {
+            public void onSpeechStatusChanged(final MozillaSpeechService.SpeechState aState, final Object aPayload){
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        switch (aState) {
+                            case DECODING:
+                                // Handle when the speech object changes to decoding state
+                                System.out.println("*** Decoding...");
+                                break;
+                            case MIC_ACTIVITY:
+                                // Captures the activity from the microphone
+                                double db = (double)aPayload * -1;
+                                System.out.println("*** Mic activity: " + Double.toString(db));
+                                break;
+                            case STT_RESULT:
+                                // When the api finished processing and returned a hypothesis
+                                String transcription = ((STTResult)aPayload).mTranscription;
+                                float confidence = ((STTResult)aPayload).mConfidence;
+                                System.out.println("*** Result: " + transcription);
+                                break;
+                            case START_LISTEN:
+                                // Handle when the api successfully opened the microphone and started listening
+                                System.out.println("*** Listening...");
+                                break;
+                            case NO_VOICE:
+                                // Handle when the api didn't detect any voice
+                                System.out.println("*** No voice detected.");
+                                break;
+                            case CANCELED:
+                                // Handle when a cancelation was fully executed
+                                System.out.println("*** Canceled.");
+                                break;
+                            case ERROR:
+                                // Handle when any error occurred
+                                //string error = aPayload;
+                                System.out.println("*** Error: " + aPayload);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
+            }
+        };
+
+        speechService = MozillaSpeechService.getInstance();
+        speechService.addListener(speechListener);
+
+        speakButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                speechService.start(getApplicationContext());
+                System.out.println("***** Speak button clicked");
             }
         });
     }
