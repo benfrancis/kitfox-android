@@ -16,6 +16,7 @@ import android.webkit.URLUtil;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.mozilla.speechlibrary.ISpeechRecognitionListener;
@@ -59,6 +60,7 @@ public class MainActivity extends Activity {
     private ListView chatView;
     private ChatArrayAdapter chatArrayAdapter;
     private ImageButton speakButton;
+    private ProgressBar loadingSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +93,7 @@ public class MainActivity extends Activity {
 
         urlBar = findViewById(R.id.urlbar);
         speakButton = findViewById(R.id.speak_button);
+        loadingSpinner = findViewById(R.id.loading_spinner);
 
         chatView = findViewById(R.id.chat_view);
         chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.incoming_message);
@@ -141,6 +144,10 @@ public class MainActivity extends Activity {
                         switch (aState) {
                             case DECODING:
                                 // Handle when the speech object changes to decoding state
+                                speakButton.setImageResource(R.drawable.speak_button);
+                                speakButton.setVisibility(View.GONE);
+                                loadingSpinner.setVisibility(View.VISIBLE);
+
                                 System.out.println("*** Decoding...");
                                 break;
                             case MIC_ACTIVITY:
@@ -150,6 +157,8 @@ public class MainActivity extends Activity {
                                 break;
                             case STT_RESULT:
                                 // When the api finished processing and returned a hypothesis
+                                loadingSpinner.setVisibility(View.GONE);
+                                speakButton.setVisibility(View.VISIBLE);
                                 String transcription = ((STTResult)aPayload).mTranscription;
                                 float confidence = ((STTResult)aPayload).mConfidence;
                                 System.out.println("*** Result: " + transcription);
@@ -159,6 +168,7 @@ public class MainActivity extends Activity {
                                 break;
                             case START_LISTEN:
                                 // Handle when the api successfully opened the microphone and started listening
+                                speakButton.setImageResource(R.drawable.speak_button_active);
                                 System.out.println("*** Listening...");
                                 break;
                             case NO_VOICE:
@@ -166,11 +176,17 @@ public class MainActivity extends Activity {
                                 System.out.println("*** No voice detected.");
                                 break;
                             case CANCELED:
-                                // Handle when a cancelation was fully executed
-                                System.out.println("*** Canceled.");
+                                // Handle when a cancellation was fully executed
+                                speakButton.setImageResource(R.drawable.speak_button);
+                                loadingSpinner.setVisibility(View.GONE);
+                                speakButton.setVisibility(View.VISIBLE);
+                                System.out.println("*** Cancelled.");
                                 break;
                             case ERROR:
                                 // Handle when any error occurred
+                                speakButton.setImageResource(R.drawable.speak_button);
+                                loadingSpinner.setVisibility(View.GONE);
+                                speakButton.setVisibility(View.VISIBLE);
                                 //string error = aPayload;
                                 System.out.println("*** Error: " + aPayload);
                                 break;
