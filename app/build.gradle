@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "org.mozilla.kitfox"
-        minSdkVersion 26
+        minSdkVersion 27
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -64,4 +64,5 @@ dependencies {
     aarch64Implementation "org.mozilla.geckoview:geckoview-${geckoviewChannel}-arm64-v8a:${geckoviewVersion}"
 
     smart_displayCompileOnly 'com.google.android.things:androidthings:+'
+    smart_displayImplementation 'com.google.android.things.contrib:driver-voicehat:1.0';
 }

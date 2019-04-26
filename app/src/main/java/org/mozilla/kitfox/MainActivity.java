@@ -4,6 +4,9 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v4.app.ActivityCompat;
@@ -18,6 +21,9 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.google.android.things.contrib.driver.voicehat.Max98357A;
+import com.google.android.things.contrib.driver.voicehat.VoiceHat;
 
 import com.mozilla.speechlibrary.ISpeechRecognitionListener;
 import com.mozilla.speechlibrary.MozillaSpeechService;
@@ -49,8 +55,11 @@ import java.util.Map;
  *  Kitfox main activity.
  */
 public class MainActivity extends Activity {
-    private static final String HOME_PAGE = "http://kitfox.tola.me.uk";
+    private static final String HOME_PAGE = "https://tola.mozilla-iot.org";
     private static final String KITFOX_SERVER = "http://kitfox.tola.me.uk";
+
+    private static final String DEVICE_RPI3 = "rpi3";
+    private static final String TAG = "Kitfox";
 
     private GeckoView geckoview;
     private GeckoSession session;
@@ -61,6 +70,9 @@ public class MainActivity extends Activity {
     private ChatArrayAdapter chatArrayAdapter;
     private ImageButton speakButton;
     private ProgressBar loadingSpinner;
+    private AudioDeviceInfo audioInputDevice;
+    private AudioDeviceInfo audioOutputDevice;
+    private Max98357A dac;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +95,30 @@ public class MainActivity extends Activity {
                     124);
         }
 
+        // If on Raspberry Pi 3, set audio to Voice HAT
+        if (Build.DEVICE.equals(DEVICE_RPI3)) {
+            audioInputDevice = findAudioDevice(AudioManager.GET_DEVICES_INPUTS, AudioDeviceInfo.TYPE_BUS);
+            if (audioInputDevice == null) {
+                Log.e(TAG, "failed to find I2S audio input device, using default");
+            }
+            audioOutputDevice = findAudioDevice(AudioManager.GET_DEVICES_OUTPUTS, AudioDeviceInfo.TYPE_BUS);
+            if (audioOutputDevice == null) {
+                Log.e(TAG, "failed to found I2S audio output device, using default");
+            }
+
+            // Try to initialise DAC on Voice HAT
+            try {
+                Log.i(TAG, "initializing DAC");
+                dac = VoiceHat.openDac();
+                dac.setSdMode(Max98357A.SD_MODE_SHUTDOWN);
+            } catch (IOException e) {
+                Log.e(TAG, "Error initializing DAC:", e);
+                return;
+            }
+        }
+
+
+
         geckoview = findViewById(R.id.geckoview);
         session = new GeckoSession();
         runtime = GeckoRuntime.create(this);
@@ -98,6 +134,8 @@ public class MainActivity extends Activity {
         chatView = findViewById(R.id.chat_view);
         chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.incoming_message);
         chatView.setAdapter(chatArrayAdapter);
+
+
 
         /**
          * Navigate to URL or send message on submit.
@@ -211,6 +249,23 @@ public class MainActivity extends Activity {
     }
 
     /**
+     *
+     * @param deviceFlag
+     * @param deviceType
+     * @return
+     */
+    private AudioDeviceInfo findAudioDevice(int deviceFlag, int deviceType) {
+        AudioManager manager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] adis = manager.getDevices(deviceFlag);
+        for (AudioDeviceInfo adi : adis) {
+            if (adi.getType() == deviceType) {
+                return adi;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Show web view and navigate to home page.
      *
      * @param view
@@ -278,7 +333,7 @@ public class MainActivity extends Activity {
         }, new GeckoResult.OnExceptionListener<Void>() {
             @Override
             public GeckoResult<Void> onException(final Throwable exception) {
-                Log.e("Kitfox", "Exception with response from server");
+                Log.e(TAG, "Exception with response from server");
                 return null;
             }
         });
@@ -292,7 +347,7 @@ public class MainActivity extends Activity {
     private void handleMessageResponse(WebResponse response) {
         // Detect error responses
         if (response.statusCode != 200) {
-            Log.e("Kitfox", "Received bad response from server " + response.statusCode);
+            Log.e(TAG, "Received bad response from server " + response.statusCode);
             return;
         }
 
@@ -319,11 +374,11 @@ public class MainActivity extends Activity {
         if (text != null && text.length() > 0) {
             this.showChatMessage(true, text);
         } else {
-            Log.i("Kitfox","No text response provided by server.");
+            Log.i(TAG,"No text response provided by server.");
         }
 
         if (method == null || url == null) {
-            Log.i("Kitfox", "No method or URL provided by server.");
+            Log.i(TAG, "No method or URL provided by server.");
             return;
         }
 
@@ -367,7 +422,7 @@ public class MainActivity extends Activity {
         try {
             streamReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
         } catch (UnsupportedEncodingException exception) {
-            Log.e("Kitfox", "Unsupported encoding from InputStream");
+            Log.e(TAG, "Unsupported encoding from InputStream");
         }
         StringBuilder stringBuilder = new StringBuilder();
         String inputString;
@@ -375,7 +430,7 @@ public class MainActivity extends Activity {
             while ((inputString = streamReader.readLine()) != null)
                 stringBuilder.append(inputString);
         } catch (IOException exception) {
-            Log.e("Kitfox", "I/O exception while reading InputStream");
+            Log.e(TAG, "I/O exception while reading InputStream");
         }
 
 
@@ -385,7 +440,7 @@ public class MainActivity extends Activity {
         try {
             object = new JSONObject(string);
         } catch(JSONException exception) {
-            Log.e("Kitfox", "Invalid JSON");
+            Log.e(TAG, "Invalid JSON");
         }
 
         return object;
